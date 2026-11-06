@@ -6,11 +6,11 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/06 12:22:30 by ksener          #+#    #+#               #
-#  Updated: 2026/11/06 15:48:25 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/06 16:27:21 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
-import json
+from models import Hubs, StartModel, EndModel, HubModel
 from enum import Enum
 
 class HubOptions(Enum):
@@ -33,6 +33,8 @@ def parsing_hub(context: str) -> tuple[dict, dict, list]:
             start_hub["name"] = parts[1]
             start_hub["x"] = parts[2]
             start_hub["y"] = parts[3]
+            if int(start_hub["x"]) < 0 or int(start_hub["y"]) < 0:
+                raise Exception("Coordinates must be a positive values.")
             if "color=" in line:
                 start_hub["color"] = line.split("color=")[1].split()[0].replace("]", "")
                 
@@ -42,6 +44,8 @@ def parsing_hub(context: str) -> tuple[dict, dict, list]:
             parts_y = parts[3]
             end_hub["x"] = parts[2]
             end_hub["y"] = parts_y
+            if int(end_hub["x"]) < 0 or int(end_hub["y"]) < 0:
+                raise Exception("Coordinates must be a positive values.")
             if "color=" in line:
                 end_hub["color"] = line.split("color=")[1].split()[0].replace("]", "")
                 
@@ -64,7 +68,9 @@ def parsing_hub(context: str) -> tuple[dict, dict, list]:
                 if "=" in item:
                     key, value = item.split("=")
                     if key not in HubOptions:
-                        raise Exception("Error")
+                        raise Exception(
+                            f"'{key}' is not match Hub options. "
+                            f"Did you mean 'zone', 'color', 'max_drones'?")
                     hub[key] = value
                     
             hubs.append(hub)
@@ -75,8 +81,33 @@ def parsing_connection(context: str, conn_name: str, max_cap: int):
 
 def parsing(file_path: str):
     with open(file_path, "r", encoding="utf-8") as file:
-        print(json.dumps(parsing_hub(file), indent=4))
-        file_contex = file.read()
-
+        try:
+            start_hub, end_hub, hubs = parsing_hub(file)
+            hub_start_model = StartModel(
+                name=start_hub["name"],
+                x=start_hub["x"],
+                y=start_hub["y"],
+                color=start_hub["color"]
+            )
+            hub_end_model = EndModel(
+                name=end_hub["name"],
+                x=end_hub["x"],
+                y=end_hub["y"],
+                color=end_hub["color"]
+            )
+            hub_list = []
+            for item in hubs:
+                hub_model = HubModel(
+                name=item["name"],
+                x=int(item["x"]),
+                y=int(item["y"]),
+                color=item.get("color", "gray"),
+                zone=item.get("zone", "normal"),
+                max_drones=int(item.get("max_drones", 1))
+                )
+                hub_list.append(hub_model)
+            print(hub_list)
+        except Exception as e:
+            print("Error:", e)
 if __name__ == "__main__":
     parsing("map.txt")
