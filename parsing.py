@@ -6,7 +6,7 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/06 12:22:30 by ksener          #+#    #+#               #
-#  Updated: 2026/11/06 13:12:49 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/06 14:53:14 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -39,23 +39,27 @@ def parsing_hub(context: str) -> list[dict, dict, list]:
             end_hub["y"] = word.split(name)[1].split()[1]
             end_hub["color"] = word.split("color=")[1].split()[0][:-1]
         elif "hub" in word:
-            hub = {"name": "",
-                   "x": "",
-                   "y": "",
-                   "zone": "",
-                   "color": "",
-                   "max": ""}
+            hub = {}
 
-            name = word.split("hub:")[1].split()[0]
+            example = word.split("hub:")[1].split()
+            name, hubx, huby, *rest = example
             hub["name"] = name
-            hub["x"] = word.split("hub:")[1].split()[1]
-            hub["y"] = word.split("hub:")[1].split()[2]
-            if "zone" in word:
-                hub["zone"] = word.split("hub:")[1].split()[3]
-            if "color" in word:
-                hub["color"] = word.split("hub:")[1].split()[4]
-            if "max_drones" in word:
-                hub["max"] = word.split("hub:")[1].split()[5]
+            hub["x"] = hubx
+            hub["y"] = huby
+            
+            for i, str in enumerate(rest):
+                if i == 0:
+                    if str.startswith("["):
+                        str = str[1:]
+                    else:
+                        raise Exception("Hata 1!")
+                if i == len(rest) - 1:
+                    if str.endswith("]"):
+                        str = str[:-1]
+                    else:
+                        raise Exception("HATA!")
+                key, value = str.split("=")
+                hub[key] = value
             hubs.append(hub)
     return (start_hub, end_hub, hubs)
 def parsing_connection(context: str, conn_name: str, max_cap: int):
@@ -63,7 +67,7 @@ def parsing_connection(context: str, conn_name: str, max_cap: int):
 
 def parsing(file_path: str):
     with open(file_path, "r", encoding="utf-8") as file:
-        print(parsing_hub(file))
+        print(json.dumps(parsing_hub(file), indent=4))
         file_contex = file.read()
 
 if __name__ == "__main__":
