@@ -6,11 +6,17 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/06 12:22:30 by ksener          #+#    #+#               #
-#  Updated: 2026/11/06 14:53:14 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/06 15:28:00 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
 import json
+from enum import Enum
+
+class HubOptions(Enum):
+    ZONE = "zone"
+    COLOR = "color"
+    MAX_DRONES = "max_drones"
 
 def parsing_hub(context: str) -> list[dict, dict, list]:
     start_hub = {"name": "",
@@ -59,6 +65,8 @@ def parsing_hub(context: str) -> list[dict, dict, list]:
                     else:
                         raise Exception("HATA!")
                 key, value = str.split("=")
+                if key not in HubOptions:
+                    raise Exception("Hata 2")
                 hub[key] = value
             hubs.append(hub)
     return (start_hub, end_hub, hubs)
