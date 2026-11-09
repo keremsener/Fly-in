@@ -6,7 +6,7 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/09 11:52:00 by ksener          #+#    #+#               #
-#  Updated: 2026/11/09 12:59:21 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/09 13:19:44 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -42,19 +42,6 @@ class ConnParser:
         self.origin = self.origin.strip()
         self.dest = self.dest.strip()
 
-    def parse(self, context: str) -> tuple[str, str, int]:
-        self.reset()
-
-        for line in context:
-            line = line.strip()
-            if not line or line.startswith("#"):
-                continue
-
-            if "connection:" in line:
-                self._parse_connection(line)
-
-        return (self.origin, self.dest, self.max_link_cap)
-
     def parse_all(self, context: str) -> list[tuple[str, str, int]]:
         connections = []
 
@@ -69,7 +56,3 @@ class ConnParser:
                 connections.append((self.origin, self.dest, self.max_link_cap))
 
         return connections
-
-
-def parsing_conn(context: str) -> tuple[str, str, int]:
-    return ConnParser().parse(context)
