@@ -6,7 +6,7 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/06 12:22:30 by ksener          #+#    #+#               #
-#  Updated: 2026/11/09 15:43:21 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/09 16:22:51 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -21,6 +21,7 @@ class MapParser:
         self.file_path = file_path
         self.start_model = None
         self.end_model = None
+        self.nb_drones = 0
 
     def _to_models(self, hubs: list) -> list[HubModel]:
         hub_list = []
@@ -39,7 +40,17 @@ class MapParser:
     def parse(self):
         with open(self.file_path, "r", encoding="utf-8") as file:
             try:
-                start_hub, end_hub, hubs = parsing_hub(file)
+                lines = file.readlines()
+                
+                for line in lines:
+                    line = line.strip()
+                    if line.startswith("nb_drones:"):
+                        self.nb_drones = int(line.split(":")[1].strip())
+                        if self.nb_drones < 1:
+                            raise ValidationParsingError("Drone count must be a positive integer.")
+                        break
+                start_hub, end_hub, hubs = parsing_hub(lines)
+                
                 self.start_model = StartModel(
                     name=start_hub["name"],
                     x=start_hub["x"],
@@ -56,11 +67,6 @@ class MapParser:
                 return hub_list
             except Exception as e:
                 raise ValidationParsingError(f"Map parsing failed: {e}") from e
-
-    def get_start_end(self):
-        if self.start_model is None or self.end_model is None:
-            self.parse()
-        return self.start_model, self.end_model
 
 
 def validate_connection(parsed_list: list[tuple[str, str, int]], file_path: str):
