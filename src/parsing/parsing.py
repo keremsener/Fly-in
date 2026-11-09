@@ -11,7 +11,7 @@
 # ************************************************************************* #
 
 from src.models import StartModel, EndModel, HubModel
-from .parsing_conn import parsing_conn
+from .parsing_conn import ConnParser
 from .parsing_hub import parsing_hub
 
 
@@ -57,8 +57,9 @@ class MapParser:
                 raise
 
 
-def parsing_connection(context: str):
-    return parsing_conn(context)
+def parsing_connection(file_path: str):
+    with open(file_path, "r", encoding="utf-8") as file:
+        return ConnParser().parse_all(file)
 
 
 def parsing(file_path: str):

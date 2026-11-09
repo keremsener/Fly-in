@@ -10,13 +10,15 @@
 #                                                                           #
 # ************************************************************************* #
 
-from src.parsing.parsing import MapParser
-from src.parsing.parsing_conn import ConnParser
+from src.parsing.parsing import parsing, parsing_connection
 
 if __name__ == "__main__":
-    MapParser("map.txt").parse()
-    with open("map.txt", "r", encoding="utf-8") as file:
-        all_connections = ConnParser().parse_all(file)
+    hubs = parsing("map.txt")
+    all_connections = parsing_connection("map.txt")
+
+    print("Parsed hubs:")
+    for index, hub in enumerate(hubs, start=1):
+        print(f"{index}. {hub}")
 
     print("All parsed connections:")
     for index, connection in enumerate(all_connections, start=1):
