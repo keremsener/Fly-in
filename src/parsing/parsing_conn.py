@@ -6,12 +6,9 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/09 11:52:00 by ksener          #+#    #+#               #
-#  Updated: 2026/11/09 12:57:52 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/09 12:59:21 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
-
-from src.models import ConnModel
-
 
 class ConnParser:
     def __init__(self):

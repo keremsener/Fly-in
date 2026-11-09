@@ -6,12 +6,12 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/06 12:22:30 by ksener          #+#    #+#               #
-#  Updated: 2026/11/09 12:44:10 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/09 12:59:12 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
 from src.models import StartModel, EndModel, HubModel
-from .parsing_conn import ConnParser, parsing_conn
+from .parsing_conn import parsing_conn
 from .parsing_hub import parsing_hub
 
 
