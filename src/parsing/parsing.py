@@ -6,11 +6,12 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/06 12:22:30 by ksener          #+#    #+#               #
-#  Updated: 2026/11/09 11:41:40 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/09 12:44:10 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
 from src.models import StartModel, EndModel, HubModel
+from .parsing_conn import ConnParser, parsing_conn
 from .parsing_hub import parsing_hub
 
 
@@ -56,8 +57,8 @@ class MapParser:
                 raise
 
 
-def parsing_connection(context: str, conn_name: str, max_cap: int):
-    pass
+def parsing_connection(context: str):
+    return parsing_conn(context)
 
 
 def parsing(file_path: str):

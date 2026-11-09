@@ -6,7 +6,7 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/09 11:33:45 by ksener          #+#    #+#               #
-#  Updated: 2026/11/09 11:33:46 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/09 11:59:01 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 from pydantic import BaseModel, Field
@@ -32,8 +32,7 @@ class HubModel(Hubs):
     max_drones: int = Field(default=1)
 
 
-class MapModel(BaseModel):
-    nb_drones: int
-    start_hub: StartModel
-    end_hub: EndModel
-    hubs: list[HubModel] = []
+class ConnModel(BaseModel):
+    origin: str
+    dest: str
+    max_link_cap: int = Field(default=1)
