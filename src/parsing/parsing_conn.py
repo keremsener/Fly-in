@@ -6,7 +6,7 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/09 11:52:00 by ksener          #+#    #+#               #
-#  Updated: 2026/11/09 12:42:41 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/09 12:57:52 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -29,7 +29,8 @@ class ConnParser:
 
         if "[" in cleaned:
             route, extra = cleaned.split("[", 1)
-            extra = extra[:-1].strip() if extra.endswith("]") else extra.strip()
+            extra = extra[:-
+                          1].strip() if extra.endswith("]") else extra.strip()
             if "max_link_capacity=" in extra:
                 capacity = extra.split("max_link_capacity=", 1)[1].strip()
                 self.max_link_cap = int(capacity)
@@ -56,6 +57,21 @@ class ConnParser:
                 self._parse_connection(line)
 
         return (self.origin, self.dest, self.max_link_cap)
+
+    def parse_all(self, context: str) -> list[tuple[str, str, int]]:
+        connections = []
+
+        for line in context:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+
+            if "connection:" in line:
+                self.reset()
+                self._parse_connection(line)
+                connections.append((self.origin, self.dest, self.max_link_cap))
+
+        return connections
 
 
 def parsing_conn(context: str) -> tuple[str, str, int]:
