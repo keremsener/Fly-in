@@ -6,12 +6,12 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/09 11:52:00 by ksener          #+#    #+#               #
-#  Updated: 2026/11/09 14:05:00 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/09 14:27:10 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
 class ConnParser:
-    def __init__(self, file_path:str):
+    def __init__(self, file_path: str):
         self.origin = ""
         self.dest = ""
         self.max_link_cap = 1
@@ -46,14 +46,16 @@ class ConnParser:
     def parse_all(self) -> list[tuple[str, str, int]]:
         connections = []
 
-        for line in self.file_path:
-            line = line.strip()
-            if not line or line.startswith("#"):
-                continue
+        with open(self.file_path, "r", encoding="utf-8") as file:
+            for line in file:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
 
-            if "connection:" in line:
-                self.reset()
-                self._parse_connection(line)
-                connections.append((self.origin, self.dest, self.max_link_cap))
+                if "connection:" in line:
+                    self.reset()
+                    self._parse_connection(line)
+                    connections.append(
+                        (self.origin, self.dest, self.max_link_cap))
 
         return connections
