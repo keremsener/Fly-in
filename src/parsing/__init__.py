@@ -1,2 +1,2 @@
-from .parsing import parsing
-from .parsing_hub import parsing_hub
+from .parsing import MapParser, parsing
+from .parsing_hub import HubParser, parsing_hub

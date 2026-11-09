@@ -6,11 +6,11 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/06 16:45:57 by ksener          #+#    #+#               #
-#  Updated: 2026/11/06 16:46:36 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/09 11:41:40 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
-from src.parsing import parsing
+from src.parsing.parsing import MapParser
 
 if __name__ == "__main__":
-    parsing("map.txt")
+    MapParser("map.txt").parse()
