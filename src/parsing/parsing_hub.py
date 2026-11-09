@@ -6,10 +6,11 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/06 16:39:15 by ksener          #+#    #+#               #
-#  Updated: 2026/11/09 14:50:11 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/09 14:57:06 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 from enum import Enum
+from src.error import HubParsingError
 
 
 class HubOptions(Enum):
@@ -31,7 +32,7 @@ class HubParser:
 
     def _validate_coordinates(self, x_value: str, y_value: str, hub_name: str):
         if int(x_value) < 0 or int(y_value) < 0:
-            raise Exception(
+            raise HubParsingError(
                 f"Coordinates for '{hub_name}' must be positive values.")
 
     def _parse_hub_attributes(self, hub: dict, rest: list[str]):
@@ -45,7 +46,7 @@ class HubParser:
                 key, value = item.split("=", 1)
                 valid_keys = {option.value for option in HubOptions}
                 if key not in valid_keys:
-                    raise Exception(
+                    raise HubParsingError(
                         f"'{key}' is not match Hub options. "
                         f"Did you mean 'zone', 'color', 'max_drones'?")
                 hub[key] = value

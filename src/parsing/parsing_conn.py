@@ -6,9 +6,12 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/09 11:52:00 by ksener          #+#    #+#               #
-#  Updated: 2026/11/09 14:27:10 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/09 14:57:04 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
+
+from src.error import ConnectionParsingError
+
 
 class ConnParser:
     def __init__(self, file_path: str):
@@ -37,7 +40,7 @@ class ConnParser:
 
         route = route.strip()
         if "-" not in route:
-            raise Exception("Wrong format!")
+            raise ConnectionParsingError("Connection format is wrong.")
 
         self.origin, self.dest = route.split("-", 1)
         self.origin = self.origin.strip()

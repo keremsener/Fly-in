@@ -6,11 +6,12 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/06 12:22:30 by ksener          #+#    #+#               #
-#  Updated: 2026/11/09 14:53:51 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/09 14:57:01 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
 from src.models import StartModel, EndModel, HubModel
+from src.error import ValidationParsingError
 from .parsing_conn import ConnParser
 from .parsing_hub import parsing_hub
 
@@ -54,8 +55,7 @@ class MapParser:
                 hub_list = self._to_models(hubs)
                 return hub_list
             except Exception as e:
-                print("Error:", e)
-                raise
+                raise ValidationParsingError(f"Map parsing failed: {e}") from e
 
     def get_start_end(self):
         if self.start_model is None or self.end_model is None:
@@ -84,7 +84,9 @@ def parsing_connection(file_path: str):
     if validate_connection(parsed_connection, file_path):
         return parsed_connection
     else:
-        raise Exception("ERORRRR!!")
+        raise ValidationParsingError(
+            "Connection validation failed: unknown hub name or invalid capacity."
+        )
     return parsed_connection
 
 
