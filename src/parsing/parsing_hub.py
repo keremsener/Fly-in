@@ -6,7 +6,7 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/06 16:39:15 by ksener          #+#    #+#               #
-#  Updated: 2026/11/09 11:41:39 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/09 14:50:11 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 from enum import Enum
