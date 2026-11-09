@@ -6,7 +6,7 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/06 12:22:30 by ksener          #+#    #+#               #
-#  Updated: 2026/11/09 14:57:01 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/09 15:43:21 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -64,6 +64,7 @@ class MapParser:
 
 
 def validate_connection(parsed_list: list[tuple[str, str, int]], file_path: str):
+    seen_connections = set()
     with open(file_path, "r", encoding="utf-8") as file:
         start_hub, end_hub, hubs = parsing_hub(file)
 
@@ -74,10 +75,17 @@ def validate_connection(parsed_list: list[tuple[str, str, int]], file_path: str)
     for origin, dest, max_link_cap in parsed_list:
         if origin not in hub_name_set or dest not in hub_name_set:
             return False
+
         if int(max_link_cap) < 1:
             return False
-    return True
 
+        connection_pair = tuple(sorted([origin, dest]))
+        if connection_pair in seen_connections:
+            return False
+
+        seen_connections.add(connection_pair)
+
+    return True
 
 def parsing_connection(file_path: str):
     parsed_connection = ConnParser(file_path).parse_all()
@@ -87,7 +95,6 @@ def parsing_connection(file_path: str):
         raise ValidationParsingError(
             "Connection validation failed: unknown hub name or invalid capacity."
         )
-    return parsed_connection
 
 
 def parsing_hub_func(file_path: str):
