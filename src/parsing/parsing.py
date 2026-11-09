@@ -6,7 +6,7 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/06 12:22:30 by ksener          #+#    #+#               #
-#  Updated: 2026/11/09 12:59:12 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/09 14:06:41 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -19,7 +19,7 @@ class MapParser:
     def __init__(self, file_path: str):
         self.file_path = file_path
 
-    def _to_models(self, start_hub: dict, end_hub: dict, hubs: list) -> list[HubModel]:
+    def _to_models(self, hubs: list) -> list[HubModel]:
         hub_list = []
         for item in hubs:
             hub_model = HubModel(
@@ -49,7 +49,7 @@ class MapParser:
                     y=end_hub["y"],
                     color=end_hub["color"],
                 )
-                hub_list = self._to_models(start_hub, end_hub, hubs)
+                hub_list = self._to_models(hubs)
                 print(hub_list)
                 return hub_list
             except Exception as e:
@@ -58,9 +58,8 @@ class MapParser:
 
 
 def parsing_connection(file_path: str):
-    with open(file_path, "r", encoding="utf-8") as file:
-        return ConnParser().parse_all(file)
+    return ConnParser(file_path).parse_all()
 
 
-def parsing(file_path: str):
+def parsing_hub_func(file_path: str):
     return MapParser(file_path).parse()

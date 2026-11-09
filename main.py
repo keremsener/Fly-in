@@ -6,14 +6,14 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/06 16:45:57 by ksener          #+#    #+#               #
-#  Updated: 2026/11/09 12:57:50 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/09 14:06:48 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
-from src.parsing.parsing import parsing, parsing_connection
+from src.parsing.parsing import parsing_hub_func, parsing_connection
 
 if __name__ == "__main__":
-    hubs = parsing("map.txt")
+    hubs = parsing_hub_func("map.txt")
     all_connections = parsing_connection("map.txt")
 
     print("Parsed hubs:")

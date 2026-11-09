@@ -6,15 +6,16 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/09 11:52:00 by ksener          #+#    #+#               #
-#  Updated: 2026/11/09 13:19:44 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/09 14:05:00 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
 class ConnParser:
-    def __init__(self):
+    def __init__(self, file_path:str):
         self.origin = ""
         self.dest = ""
         self.max_link_cap = 1
+        self.file_path = file_path
 
     def reset(self):
         self.origin = ""
@@ -42,10 +43,10 @@ class ConnParser:
         self.origin = self.origin.strip()
         self.dest = self.dest.strip()
 
-    def parse_all(self, context: str) -> list[tuple[str, str, int]]:
+    def parse_all(self) -> list[tuple[str, str, int]]:
         connections = []
 
-        for line in context:
+        for line in self.file_path:
             line = line.strip()
             if not line or line.startswith("#"):
                 continue
