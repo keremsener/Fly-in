@@ -6,13 +6,14 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/10 13:02:57 by ksener          #+#    #+#               #
-#  Updated: 2026/11/11 11:37:56 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/11 12:15:05 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
-from src.parsing.parsing import parsing_hub_func, parsing_connection, parsing_start_end
+from src.parsing.parsing import parsing_hub_func, parsing_connection, parsing_drone_func, parsing_start_end
 from src.parsing.parsing_hub import HubParser
 from src.error import ParsingError
+from .pathfinding import find_shortest_paths
 
 # ------------------- TASK ----------------------------
 # def map_border_maker(start_x: int, start_y: int, goal_x: int, goal_y: int):
@@ -36,10 +37,8 @@ from src.error import ParsingError
 def map_generator():
     try:
         hubs = parsing_hub_func("map.txt")
+        drones = parsing_drone_func("map.txt")
         all_connections = parsing_connection("map.txt")
-        start_hub = hubs.pop(0)
-        end_hub = hubs.pop(0)
-        print(hubs)
-        print(end_hub)
+        find_shortest_paths(hubs, all_connections, drones)
     except ParsingError as error:
         print(f"Parsing error: {error}")
