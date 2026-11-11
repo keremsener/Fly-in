@@ -6,11 +6,11 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/06 12:22:30 by ksener          #+#    #+#               #
-#  Updated: 2026/11/11 11:50:59 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/11 12:10:44 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
-from src.models import StartModel, EndModel, HubModel
+from src.models import StartModel, EndModel, HubModel, Drone
 from src.error import ValidationParsingError
 from .parsing_conn import ConnParser
 from .parsing_hub import parsing_hub
@@ -38,19 +38,23 @@ class MapParser:
             hub_list.append(hub_model)
         return hub_list
 
+    def _extract_nb_drones(self, lines: list[str]) -> int:
+        for line in lines:
+            line = line.strip()
+            if line.startswith("nb_drones:"):
+                nb_drones = int(line.split(":")[1].strip())
+                if nb_drones < 1:
+                    raise ValidationParsingError(
+                        "Drone count must be a positive integer.")
+                return nb_drones
+        raise ValidationParsingError(
+            "'nb_drones' field is missing in map file.")
+
     def parse(self):
         with open(self.file_path, "r", encoding="utf-8") as file:
             try:
                 lines = file.readlines()
-
-                for line in lines:
-                    line = line.strip()
-                    if line.startswith("nb_drones:"):
-                        self.nb_drones = int(line.split(":")[1].strip())
-                        if self.nb_drones < 1:
-                            raise ValidationParsingError(
-                                "Drone count must be a positive integer.")
-                        break
+                self.nb_drones = self._extract_nb_drones(lines)
                 start_hub, end_hub, hubs = parsing_hub(lines)
 
                 self.start_model = StartModel(
@@ -74,6 +78,25 @@ class MapParser:
                 return hub_list
             except Exception as e:
                 raise ValidationParsingError(f"Map parsing failed: {e}") from e
+
+    def parse_drones(self) -> list[Drone]:
+        with open(self.file_path, "r", encoding="utf-8") as file:
+            try:
+                lines = file.readlines()
+                self.nb_drones = self._extract_nb_drones(lines)
+                start_hub, _, _ = parsing_hub(lines)
+
+                if not start_hub.get("name"):
+                    raise ValidationParsingError(
+                        "Start hub could not be parsed for drone initialization.")
+
+                return [
+                    Drone(drone_id=drone_id, start_hub_name=start_hub["name"])
+                    for drone_id in range(1, self.nb_drones + 1)
+                ]
+            except Exception as e:
+                raise ValidationParsingError(
+                    f"Drone parsing failed: {e}") from e
 
 
 def validate_connection(parsed_list: list[tuple[str, str, int]], file_path: str):
@@ -113,6 +136,10 @@ def parsing_connection(file_path: str):
 
 def parsing_hub_func(file_path: str):
     return MapParser(file_path).parse()
+
+
+def parsing_drone_func(file_path: str):
+    return MapParser(file_path).parse_drones()
 
 
 def parsing_start_end(file_path: str):

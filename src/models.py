@@ -6,7 +6,7 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/09 11:33:45 by ksener          #+#    #+#               #
-#  Updated: 2026/11/11 11:50:58 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/11 12:10:43 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 from pydantic import BaseModel, Field
@@ -37,6 +37,13 @@ class ConnModel(BaseModel):
     origin: str
     dest: str
     max_link_cap: int = Field(default=1)
+
+
+class Drone:
+    def __init__(self, drone_id: int, start_hub_name: str):
+        self.id = drone_id
+        self.current_location = start_hub_name
+        self.is_finished = False
 
 
 class MapGraph(BaseModel):
