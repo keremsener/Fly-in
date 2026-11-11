@@ -6,7 +6,7 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/06 12:22:30 by ksener          #+#    #+#               #
-#  Updated: 2026/11/09 16:22:51 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/10 13:18:48 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -30,6 +30,7 @@ class MapParser:
                 name=item["name"],
                 x=int(item["x"]),
                 y=int(item["y"]),
+                neighbor=item.get("neighbor", []),
                 color=item.get("color", "gray"),
                 zone=item.get("zone", "normal"),
                 max_drones=int(item.get("max_drones", 1)),
@@ -55,15 +56,20 @@ class MapParser:
                     name=start_hub["name"],
                     x=start_hub["x"],
                     y=start_hub["y"],
+                    neighbor=start_hub.get("neighbor", []),
                     color=start_hub["color"],
                 )
                 self.end_model = EndModel(
                     name=end_hub["name"],
                     x=end_hub["x"],
                     y=end_hub["y"],
+                    neighbor=end_hub.get("neighbor", []),
                     color=end_hub["color"],
                 )
-                hub_list = self._to_models(hubs)
+                hub_list = []
+                hub_list.append(self.start_model)
+                hub_list.append(self.end_model)
+                hub_list.append(self._to_models(hubs))
                 return hub_list
             except Exception as e:
                 raise ValidationParsingError(f"Map parsing failed: {e}") from e

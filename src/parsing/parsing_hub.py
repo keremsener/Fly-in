@@ -6,7 +6,7 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/06 16:39:15 by ksener          #+#    #+#               #
-#  Updated: 2026/11/09 14:57:06 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/11 11:33:55 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 from enum import Enum
@@ -21,13 +21,17 @@ class HubOptions(Enum):
 
 class HubParser:
     def __init__(self):
-        self.start_hub = {"name": "", "x": "", "y": "", "color": ""}
-        self.end_hub = {"name": "", "x": "", "y": "", "color": ""}
+        self.start_hub = {"name": "", "x": "",
+                          "y": "", "color": "", "neighbor": []}
+        self.end_hub = {"name": "", "x": "",
+                        "y": "", "color": "", "neighbor": []}
         self.hubs = []
 
     def reset(self):
-        self.start_hub = {"name": "", "x": "", "y": "", "color": ""}
-        self.end_hub = {"name": "", "x": "", "y": "", "color": ""}
+        self.start_hub = {"name": "", "x": "",
+                          "y": "", "color": "", "neighbor": []}
+        self.end_hub = {"name": "", "x": "",
+                        "y": "", "color": "", "neighbor": []}
         self.hubs = []
 
     def _validate_coordinates(self, x_value: str, y_value: str, hub_name: str):
@@ -50,6 +54,23 @@ class HubParser:
                         f"'{key}' is not match Hub options. "
                         f"Did you mean 'zone', 'color', 'max_drones'?")
                 hub[key] = value
+
+    def _parse_connection_line(self, line: str):
+        cleaned = line.replace("connection:", "", 1).strip()
+        route = cleaned.split("[", 1)[0].strip()
+        if "-" not in route:
+            return None
+        origin, dest = route.split("-", 1)
+        return (origin.strip(), dest.strip())
+
+    def find_neighbor(self, hub_name: str, conn_list: list[tuple[str, str]]) -> list[str]:
+        result = []
+        for origin, dest in conn_list:
+            if hub_name == origin:
+                result.append(dest)
+            elif hub_name == dest:
+                result.append(origin)
+        return result
 
     def _parse_start_hub(self, line: str):
         parts = line.split()
@@ -80,13 +101,16 @@ class HubParser:
         hub["name"] = name
         hub["x"] = hubx
         hub["y"] = huby
+        hub["neighbor"] = []
         self._parse_hub_attributes(hub, rest)
         self.hubs.append(hub)
 
     def parse(self, context: str) -> tuple[dict, dict, list]:
         self.reset()
+        lines = list(context)
+        connections = []
 
-        for line in context:
+        for line in lines:
             line = line.strip()
             if not line or line.startswith("#"):
                 continue
@@ -97,6 +121,19 @@ class HubParser:
                 self._parse_end_hub(line)
             elif "hub:" in line:
                 self._parse_hub(line)
+            elif "connection:" in line:
+                parsed_connection = self._parse_connection_line(line)
+                if parsed_connection:
+                    connections.append(parsed_connection)
+
+        if self.start_hub["name"]:
+            self.start_hub["neighbor"] = self.find_neighbor(
+                self.start_hub["name"], connections)
+        if self.end_hub["name"]:
+            self.end_hub["neighbor"] = self.find_neighbor(
+                self.end_hub["name"], connections)
+        for hub in self.hubs:
+            hub["neighbor"] = self.find_neighbor(hub["name"], connections)
 
         return (self.start_hub, self.end_hub, self.hubs)
 
