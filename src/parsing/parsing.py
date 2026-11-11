@@ -6,7 +6,7 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/06 12:22:30 by ksener          #+#    #+#               #
-#  Updated: 2026/11/10 13:18:48 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/11 11:50:59 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -30,7 +30,7 @@ class MapParser:
                 name=item["name"],
                 x=int(item["x"]),
                 y=int(item["y"]),
-                neighbor=item.get("neighbor", []),
+                neighbor=item.get("neighbor", {}),
                 color=item.get("color", "gray"),
                 zone=item.get("zone", "normal"),
                 max_drones=int(item.get("max_drones", 1)),
@@ -42,28 +42,29 @@ class MapParser:
         with open(self.file_path, "r", encoding="utf-8") as file:
             try:
                 lines = file.readlines()
-                
+
                 for line in lines:
                     line = line.strip()
                     if line.startswith("nb_drones:"):
                         self.nb_drones = int(line.split(":")[1].strip())
                         if self.nb_drones < 1:
-                            raise ValidationParsingError("Drone count must be a positive integer.")
+                            raise ValidationParsingError(
+                                "Drone count must be a positive integer.")
                         break
                 start_hub, end_hub, hubs = parsing_hub(lines)
-                
+
                 self.start_model = StartModel(
                     name=start_hub["name"],
                     x=start_hub["x"],
                     y=start_hub["y"],
-                    neighbor=start_hub.get("neighbor", []),
+                    neighbor=start_hub.get("neighbor", {}),
                     color=start_hub["color"],
                 )
                 self.end_model = EndModel(
                     name=end_hub["name"],
                     x=end_hub["x"],
                     y=end_hub["y"],
-                    neighbor=end_hub.get("neighbor", []),
+                    neighbor=end_hub.get("neighbor", {}),
                     color=end_hub["color"],
                 )
                 hub_list = []
@@ -98,6 +99,7 @@ def validate_connection(parsed_list: list[tuple[str, str, int]], file_path: str)
         seen_connections.add(connection_pair)
 
     return True
+
 
 def parsing_connection(file_path: str):
     parsed_connection = ConnParser(file_path).parse_all()

@@ -6,7 +6,7 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/09 11:33:45 by ksener          #+#    #+#               #
-#  Updated: 2026/11/10 16:01:34 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/11 11:50:58 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 from pydantic import BaseModel, Field
@@ -16,7 +16,7 @@ class Hubs(BaseModel):
     name: str = Field(min_length=1)
     x: int
     y: int
-    neighbor: list[str] = Field(default_factory=list)
+    neighbor: dict[str, dict] = Field(default_factory=dict)
 
 
 class StartModel(Hubs):

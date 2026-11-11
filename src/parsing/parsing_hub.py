@@ -6,7 +6,7 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/06 16:39:15 by ksener          #+#    #+#               #
-#  Updated: 2026/11/11 11:33:55 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/11 11:50:59 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 from enum import Enum
@@ -22,16 +22,16 @@ class HubOptions(Enum):
 class HubParser:
     def __init__(self):
         self.start_hub = {"name": "", "x": "",
-                          "y": "", "color": "", "neighbor": []}
+                          "y": "", "color": "", "neighbor": {}}
         self.end_hub = {"name": "", "x": "",
-                        "y": "", "color": "", "neighbor": []}
+                        "y": "", "color": "", "neighbor": {}}
         self.hubs = []
 
     def reset(self):
         self.start_hub = {"name": "", "x": "",
-                          "y": "", "color": "", "neighbor": []}
+                          "y": "", "color": "", "neighbor": {}}
         self.end_hub = {"name": "", "x": "",
-                        "y": "", "color": "", "neighbor": []}
+                        "y": "", "color": "", "neighbor": {}}
         self.hubs = []
 
     def _validate_coordinates(self, x_value: str, y_value: str, hub_name: str):
@@ -57,19 +57,30 @@ class HubParser:
 
     def _parse_connection_line(self, line: str):
         cleaned = line.replace("connection:", "", 1).strip()
+        capacity = 1
+        if "[" in cleaned:
+            route, extras = cleaned.split("[", 1)
+            extras = extras[:-
+                            1].strip() if extras.endswith("]") else extras.strip()
+            for item in extras.split():
+                if item.startswith("max_link_capacity="):
+                    capacity = int(item.split("=", 1)[1])
+                    break
+        else:
+            route = cleaned
         route = cleaned.split("[", 1)[0].strip()
         if "-" not in route:
             return None
         origin, dest = route.split("-", 1)
-        return (origin.strip(), dest.strip())
+        return (origin.strip(), dest.strip(), capacity)
 
-    def find_neighbor(self, hub_name: str, conn_list: list[tuple[str, str]]) -> list[str]:
-        result = []
-        for origin, dest in conn_list:
+    def find_neighbor(self, hub_name: str, conn_list: list[tuple[str, str, int]]) -> dict[str, dict]:
+        result = {}
+        for origin, dest, capacity in conn_list:
             if hub_name == origin:
-                result.append(dest)
+                result[dest] = {"capacity": capacity}
             elif hub_name == dest:
-                result.append(origin)
+                result[origin] = {"capacity": capacity}
         return result
 
     def _parse_start_hub(self, line: str):
@@ -101,7 +112,7 @@ class HubParser:
         hub["name"] = name
         hub["x"] = hubx
         hub["y"] = huby
-        hub["neighbor"] = []
+        hub["neighbor"] = {}
         self._parse_hub_attributes(hub, rest)
         self.hubs.append(hub)
 
