@@ -39,13 +39,21 @@ def find_shortest_paths(
 ):
     start_hub, end_hub, normal_hubs = _unpack_hubs(hubs)
 
+    hub_lookup = {}
+
+    hub_lookup[start_hub.name] = start_hub
+    hub_lookup[end_hub.name] = end_hub
+
+    for hub in normal_hubs:
+        hub_lookup[hub.name] = hub
+
     state = {
         "start_hub": start_hub,
         "end_hub": end_hub,
-        "normal_hubs": normal_hubs,
+        "hub_lookup": hub_lookup,
         "connections": all_connections,
         "drones": drones,
         "drone_lookup": build_drone_lookup(drones),
     }
-    # NOTE: Algorithm implementation will be added here.
+
     return state
