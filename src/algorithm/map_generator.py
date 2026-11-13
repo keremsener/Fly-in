@@ -39,6 +39,8 @@ def map_generator():
         hubs = parsing_hub_func("map.txt")
         drones = parsing_drone_func("map.txt")
         all_connections = parsing_connection("map.txt")
-        find_shortest_paths(hubs, all_connections, drones)
-    except ParsingError as error:
-        print(f"Parsing error: {error}")
+        state = find_shortest_paths(hubs, all_connections, drones)
+        for line in state["turn_logs"]:
+            print(line)
+    except (ParsingError, ValueError, RuntimeError) as error:
+        print(f"Error: {error}")

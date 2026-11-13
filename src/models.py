@@ -44,6 +44,9 @@ class Drone:
         self.id = drone_id
         self.current_location = start_hub_name
         self.is_finished = False
+        self.path: list[str] = []
+        self.transit_turns_left: int = 0
+        self.transit_target: str | None = None
 
 
 class MapGraph(BaseModel):
