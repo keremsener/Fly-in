@@ -6,11 +6,11 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/09 11:52:00 by ksener          #+#    #+#               #
-#  Updated: 2026/11/09 14:57:04 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/16 14:40:44 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
-from src.error import ConnectionParsingError
+from src.core.error import ConnectionParsingError
 
 
 class ConnParser:

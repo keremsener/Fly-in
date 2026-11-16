@@ -6,12 +6,12 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/06 12:22:30 by ksener          #+#    #+#               #
-#  Updated: 2026/11/11 12:10:44 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/16 14:40:48 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
-from src.models import StartModel, EndModel, HubModel, Drone
-from src.error import ValidationParsingError
+from src.core.models import StartModel, EndModel, HubModel, Drone
+from src.core.error import ValidationParsingError
 from .parsing_conn import ConnParser
 from .parsing_hub import parsing_hub
 

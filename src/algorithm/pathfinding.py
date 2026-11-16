@@ -6,13 +6,13 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/11 12:01:04 by ksener          #+#    #+#               #
-#  Updated: 2026/11/13 12:23:00 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/16 14:40:48 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
 import heapq
 from typing import Any
-from src.models import Drone, StartModel, EndModel, HubModel
+from src.core.models import Drone, StartModel, EndModel, HubModel
 
 
 def _unpack_hubs(hubs: list[Any]) -> tuple[StartModel, EndModel, list[HubModel]]:

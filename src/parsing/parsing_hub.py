@@ -6,11 +6,11 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/06 16:39:15 by ksener          #+#    #+#               #
-#  Updated: 2026/11/11 11:50:59 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/16 14:40:44 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 from enum import Enum
-from src.error import HubParsingError
+from src.core.error import HubParsingError
 
 
 class HubOptions(Enum):
