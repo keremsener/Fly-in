@@ -1,9 +1,9 @@
 # Configuration
 
 PYTHON        ?= python
-APP           ?= main.py
+APP           ?= -m src
 LINT_TARGETS  ?= .
-
+UV            ?= uv
 .PHONY: run lint lint-strict clean
 
 
@@ -11,7 +11,7 @@ LINT_TARGETS  ?= .
 
 run:
 	@printf '\033[0;32m[run]\033[0m Starting application\n'
-	$(PYTHON) $(APP)
+	@$(UV) run $(PYTHON) $(APP)
 
 
 # Lint
