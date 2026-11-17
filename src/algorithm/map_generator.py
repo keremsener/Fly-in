@@ -6,7 +6,7 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/10 13:02:57 by ksener          #+#    #+#               #
-#  Updated: 2026/11/16 14:40:44 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/17 12:40:50 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -16,23 +16,30 @@ from src.core.error import ParsingError
 from .pathfinding import find_shortest_paths
 from src.parsing.parsing_map_file import parsing_map_file
 
-# ------------------- TASK ----------------------------
-# def map_border_maker(start_x: int, start_y: int, goal_x: int, goal_y: int):
-    # x = 0
-    # y = 0
-    # init_x = start_x
-    # map_coordinates = []
-    # for start_y in range(goal_y + 2):
-        # for start_x in range(goal_x + 1):
-            # print(".", end="")
-            # x = start_x
-            # map_coordinates.append((x, y))
 
-        # print()
-        # y = start_y
-        # start_x = init_x
-    # print(map_coordinates)
+from manim import *
 
+class MovingAround(MovingCameraScene):
+    def draw_hub(self, x, y):
+        self.camera.frame.move_to([5, 5, 0])
+        self.camera.frame.set(width=22)
+        circle = Circle(color=BLUE, fill_opacity=1, arc_center=[x, y, 0], radius=0.5)
+        self.add(circle)
+
+
+def map_generate(hubs: list):
+    with tempconfig({
+            "quality": "high_quality",
+            "preview": True,
+            "disable_caching": True
+        }):
+        scene = MovingAround()
+        start_hub = hubs.pop(0)
+        end_hub = hubs.pop(0)
+        scene.draw_hub(start_hub.x, start_hub.y)
+        scene.draw_hub(end_hub.x, end_hub.y)
+        [scene.draw_hub(hub.x, hub.y) for hub in hubs[0]]
+        scene.render()
 
 
 def map_generator():
@@ -43,5 +50,6 @@ def map_generator():
         state = find_shortest_paths(hubs, all_connections, drones)
         for line in state["turn_logs"]:
             print(line)
+        map_generate(hubs)
     except (ParsingError, ValueError, RuntimeError) as error:
         print(f"Error: {error}")
