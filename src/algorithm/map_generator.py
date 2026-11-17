@@ -6,7 +6,7 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/10 13:02:57 by ksener          #+#    #+#               #
-#  Updated: 2026/11/17 14:21:38 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/17 14:32:51 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -22,8 +22,17 @@ class MovingAround(MovingCameraScene):
         super().__init__(**kwargs)
         self.camera.frame.move_to([5, 5, 0])
         self.camera.frame.set(width=22)
+        
+        bg_image = ImageMobject("space.jpg")
+        bg_image.width = self.camera.frame.width
+        bg_image.height = self.camera.frame.height
+        bg_image.move_to(self.camera.frame.get_center())
+        bg_image.set_z_index(-10)
+        self.add(bg_image)
+        
         self.hub_mobjects = {}
         self.drone_mobjects = {}
+
 
     def draw_hub(self, name, x, y, col):
         circle = Circle(
@@ -76,7 +85,7 @@ class MovingAround(MovingCameraScene):
 
 def map_generate(hubs: list, connections: list, turn_logs: list):
     with tempconfig({
-            "quality": "high_quality",
+            "quality": "fourk_quality",
             "preview": True,
             "disable_caching": True
         }):
