@@ -1,0 +1,17 @@
+# Medium-complexity map: alternate routes, priorities, and a restricted hub.
+nb_drones: 6
+start_hub: start 0 0 [color=green]
+end_hub: goal 12 6 [color=red]
+hub: priority_gate 3 4 [zone=priority color=green max_drones=2]
+hub: restricted_gate 3 1 [zone=restricted color=orange max_drones=2]
+hub: north_transfer 7 5 [zone=normal color=blue max_drones=2]
+hub: south_transfer 7 1 [zone=normal color=yellow max_drones=2]
+hub: direct_route 5 3 [zone=normal color=white max_drones=2]
+connection: start-priority_gate [max_link_capacity=2]
+connection: priority_gate-north_transfer [max_link_capacity=2]
+connection: start-restricted_gate [max_link_capacity=2]
+connection: restricted_gate-south_transfer [max_link_capacity=2]
+connection: start-direct_route [max_link_capacity=2]
+connection: direct_route-goal [max_link_capacity=2]
+connection: north_transfer-goal [max_link_capacity=2]
+connection: south_transfer-goal [max_link_capacity=2]

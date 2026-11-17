@@ -1,0 +1,10 @@
+# Low-complexity map: two short routes and a small drone fleet.
+nb_drones: 3
+start_hub: start 0 0 [color=green]
+end_hub: goal 8 4 [color=red]
+hub: north 2 2 [zone=normal color=blue max_drones=2]
+hub: south 2 1 [zone=normal color=yellow max_drones=2]
+connection: start-north [max_link_capacity=2]
+connection: north-goal [max_link_capacity=2]
+connection: start-south [max_link_capacity=2]
+connection: south-goal [max_link_capacity=2]

@@ -14,7 +14,7 @@ from argparse import ArgumentParser
 def parsing_map_file() -> str:
     parser = ArgumentParser()
     parser.add_argument('--map', type=str,
-                        default="map.txt")
+                        default="maps/subject_map.txt")
 
     args = parser.parse_args()
     return args.map
