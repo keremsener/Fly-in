@@ -6,7 +6,7 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/10 13:02:57 by ksener          #+#    #+#               #
-#  Updated: 2026/11/17 13:13:07 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/17 14:21:38 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -15,6 +15,7 @@ from src.core.error import ParsingError
 from .pathfinding import find_shortest_paths
 from src.parsing.parsing_map_file import parsing_map_file
 from manim import *
+import random
 
 class MovingAround(MovingCameraScene):
     def __init__(self, **kwargs):
@@ -22,6 +23,7 @@ class MovingAround(MovingCameraScene):
         self.camera.frame.move_to([5, 5, 0])
         self.camera.frame.set(width=22)
         self.hub_mobjects = {}
+        self.drone_mobjects = {}
 
     def draw_hub(self, name, x, y, col):
         circle = Circle(
@@ -45,11 +47,34 @@ class MovingAround(MovingCameraScene):
                 color=YELLOW,
                 buff=0.5
             )
-            line.set_z_index(-1) 
+            line.set_z_index(-1)
             self.add(line)
 
+    def play_turn(self, turn_str: str, start_hub_name: str):
+        animations = []
+        start_pos = self.hub_mobjects[start_hub_name].get_center()
 
-def map_generate(hubs: list, connections: list):
+        for move in turn_str.split():
+            drone_id, target_hub_name = move.split("-", 1)
+            target_hub = self.hub_mobjects.get(target_hub_name)
+
+            if target_hub:
+                if drone_id not in self.drone_mobjects:
+                    square = Square(side_length=0.35, color=random.choice([RED, BLUE, GREEN, YELLOW]), fill_opacity=1)
+                    label = Text(drone_id, font_size=14, color=WHITE)
+                    drone = VGroup(square, label).move_to(start_pos)
+                    drone.set_z_index(2)
+                    self.add(drone)
+                    self.drone_mobjects[drone_id] = drone
+
+                drone = self.drone_mobjects[drone_id]
+                animations.append(drone.animate.move_to(target_hub.get_center()))
+
+        if animations:
+            self.play(*animations, run_time=0.8)
+
+
+def map_generate(hubs: list, connections: list, turn_logs: list):
     with tempconfig({
             "quality": "high_quality",
             "preview": True,
@@ -62,9 +87,9 @@ def map_generate(hubs: list, connections: list):
         scene.draw_hub(end_hub.name, end_hub.x, end_hub.y, end_hub.color)
         [scene.draw_hub(hub.name, hub.x, hub.y, hub.color) for hub in hubs[0]]
         [scene.draw_conn(conn[0], conn[1]) for conn in connections]
+        [scene.play_turn(turn, start_hub.name) for turn in turn_logs]    
 
         scene.render()
-
 
 
 def map_generator():
@@ -73,9 +98,9 @@ def map_generator():
         drones = parsing_drone_func(parsing_map_file())
         all_connections = parsing_connection(parsing_map_file())
         state = find_shortest_paths(hubs, all_connections, drones)
-        for line in state["turn_logs"]:
-            print(line)
-
-        map_generate(hubs, all_connections) 
+        
+        turn_logs = state["turn_logs"]
+        map_generate(hubs, all_connections, turn_logs) 
     except (ParsingError, ValueError, RuntimeError) as error:
         print(f"Error: {error}")
+
