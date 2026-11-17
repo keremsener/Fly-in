@@ -6,24 +6,21 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/10 13:02:57 by ksener          #+#    #+#               #
-#  Updated: 2026/11/17 12:40:50 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/17 13:01:03 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
-from src.parsing.parsing import parsing_hub_func, parsing_connection, parsing_drone_func, parsing_start_end
-from src.parsing.parsing_hub import HubParser
+from src.parsing.parsing import parsing_hub_func, parsing_connection, parsing_drone_func
 from src.core.error import ParsingError
 from .pathfinding import find_shortest_paths
 from src.parsing.parsing_map_file import parsing_map_file
-
-
 from manim import *
 
 class MovingAround(MovingCameraScene):
-    def draw_hub(self, x, y):
+    def draw_hub(self, x, y, col):
         self.camera.frame.move_to([5, 5, 0])
         self.camera.frame.set(width=22)
-        circle = Circle(color=BLUE, fill_opacity=1, arc_center=[x, y, 0], radius=0.5)
+        circle = Circle(color=col, fill_opacity=1, arc_center=[x, y, 0], radius=0.5)
         self.add(circle)
 
 
@@ -36,9 +33,9 @@ def map_generate(hubs: list):
         scene = MovingAround()
         start_hub = hubs.pop(0)
         end_hub = hubs.pop(0)
-        scene.draw_hub(start_hub.x, start_hub.y)
-        scene.draw_hub(end_hub.x, end_hub.y)
-        [scene.draw_hub(hub.x, hub.y) for hub in hubs[0]]
+        scene.draw_hub(start_hub.x, start_hub.y, start_hub.color)
+        scene.draw_hub(end_hub.x, end_hub.y, end_hub.color)
+        [scene.draw_hub(hub.x, hub.y, hub.color) for hub in hubs[0]]
         scene.render()
 
 
