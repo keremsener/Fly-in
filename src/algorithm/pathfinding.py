@@ -6,7 +6,7 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/11 12:01:04 by ksener          #+#    #+#               #
-#  Updated: 2026/11/19 12:09:35 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/19 12:30:28 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -74,24 +74,30 @@ def _compute_dijkstra_paths(
     end_name: str,
     hub_lookup: dict[str, HubUnion],
     max_paths: int,
-) -> list[list[str]]:
-    """Compute lowest-cost paths using Dijkstra with priority tie-breaking."""
+) -> list[tuple[int, list[str]]]:
+    """Compute distinct lowcost paths using Dijkstra with priority tie-break"""
     queue: list[tuple[int, int, str, list[str]]] = [
         (0, 0, start_name, [start_name])
     ]
-    found_paths: list[list[str]] = []
+    found_paths: list[tuple[int, list[str]]] = []
     visit_counts: dict[str, int] = {}
+    best_cost: int | None = None
 
     while queue and len(found_paths) < max_paths:
         cost, prio_bonus, current, path = heapq.heappop(queue)
 
+        if best_cost is not None and cost > best_cost + 4:
+            break
+
         if current == end_name:
-            if path not in found_paths:
-                found_paths.append(path)
+            if best_cost is None:
+                best_cost = cost
+            if all(existing != path for _, existing in found_paths):
+                found_paths.append((cost, path))
             continue
 
         visit_counts[current] = visit_counts.get(current, 0) + 1
-        if visit_counts[current] > max_paths:
+        if visit_counts[current] > max_paths * 2:
             continue
 
         current_hub = hub_lookup[current]
@@ -125,12 +131,21 @@ def _compute_dijkstra_paths(
 
 def _assign_paths_to_drones(
     drones: list[Drone],
-    paths: list[list[str]],
+    weighted_paths: list[tuple[int, list[str]]],
 ) -> None:
-    """Distribute candidate paths across drones in round-robin order."""
-    for idx, drone in enumerate(drones):
-        selected_path = paths[idx % len(paths)]
+    """Assign paths proportional to inverse path cost (faster path get more)"""
+    if len(weighted_paths) == 1:
+        single_path = weighted_paths[0][1][1:]
+        for drone in drones:
+            drone.path = list(single_path)
+        return
+
+    path_loads: list[int] = [cost for cost, _ in weighted_paths]
+    for drone in drones:
+        best_idx = min(range(len(weighted_paths)), key=lambda i: path_loads[i])
+        _, selected_path = weighted_paths[best_idx]
         drone.path = list(selected_path[1:])
+        path_loads[best_idx] += 1
 
 
 def _process_turn(state: dict[str, Any]) -> list[str]:
@@ -143,10 +158,16 @@ def _process_turn(state: dict[str, Any]) -> list[str]:
     link_usage: dict[tuple[str, str], int] = {k: 0 for k in link_capacities}
     turn_moves: list[str] = []
 
-    for drone in state["drones"]:
-        if drone.is_finished:
-            continue
+    active_drones = sorted(
+        [d for d in state["drones"] if not d.is_finished],
+        key=lambda d: (
+            0 if d.transit_turns_left > 0 else 1,
+            len(d.path),
+            d.id,
+        ),
+    )
 
+    for drone in active_drones:
         if drone.transit_turns_left > 0 and drone.transit_target:
             target_name = drone.transit_target
             drone.transit_turns_left = 0
@@ -226,13 +247,13 @@ def find_shortest_paths(
         "turn_logs": [],
     }
 
-    paths = _compute_dijkstra_paths(
+    weighted_paths = _compute_dijkstra_paths(
         start_hub.name,
         end_hub.name,
         hub_lookup,
-        max_paths=min(len(drones), 10),
+        max_paths=min(len(drones), 12),
     )
-    _assign_paths_to_drones(drones, paths)
+    _assign_paths_to_drones(drones, weighted_paths)
 
     while not all(drone.is_finished for drone in drones):
         turn_moves = _process_turn(state)
