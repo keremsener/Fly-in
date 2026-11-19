@@ -6,7 +6,7 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/09 11:52:00 by ksener          #+#    #+#               #
-#  Updated: 2026/11/16 14:40:44 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/19 12:10:39 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -14,51 +14,72 @@ from src.core.error import ConnectionParsingError
 
 
 class ConnParser:
-    def __init__(self, file_path: str):
+    """Parser responsible for extracting connection edges from map files."""
+
+    def __init__(self, file_path: str) -> None:
+        """Initialize connection parser with target file path."""
+        self.origin: str = ""
+        self.dest: str = ""
+        self.max_link_cap: int = 1
+        self.file_path: str = file_path
+
+    def reset(self) -> None:
+        """Reset current connection attributes."""
         self.origin = ""
         self.dest = ""
         self.max_link_cap = 1
-        self.file_path = file_path
 
-    def reset(self):
-        self.origin = ""
-        self.dest = ""
-        self.max_link_cap = 1
-
-    def _parse_connection(self, line: str):
+    def _parse_connection(self, line: str, line_num: int) -> None:
+        """Parse a single connection line and validate its capacity."""
         cleaned = line.replace("connection:", "", 1).strip()
 
         if "[" in cleaned:
             route, extra = cleaned.split("[", 1)
-            extra = extra[:-
-                          1].strip() if extra.endswith("]") else extra.strip()
+            if not extra.endswith("]"):
+                raise ConnectionParsingError(
+                    f"Line {line_num}: Unclosed metadata bracket."
+                )
+            extra = extra[:-1].strip()
             if "max_link_capacity=" in extra:
-                capacity = extra.split("max_link_capacity=", 1)[1].strip()
-                self.max_link_cap = int(capacity)
+                cap_str = extra.split("max_link_capacity=", 1)[1].strip()
+                try:
+                    self.max_link_cap = int(cap_str)
+                except ValueError as exc:
+                    raise ConnectionParsingError(
+                        f"Line {line_num}: Invalid capacity '{cap_str}'."
+                    ) from exc
+                if self.max_link_cap < 1:
+                    raise ConnectionParsingError(
+                        f"Line {line_num}: 'max_link_capacity' must be >= 1."
+                    )
         else:
             route = cleaned
 
         route = route.strip()
-        if "-" not in route:
-            raise ConnectionParsingError("Connection format is wrong.")
+        if route.count("-") != 1:
+            raise ConnectionParsingError(
+                f"Line {line_num}: Connection format is wrong."
+            )
 
         self.origin, self.dest = route.split("-", 1)
         self.origin = self.origin.strip()
         self.dest = self.dest.strip()
 
     def parse_all(self) -> list[tuple[str, str, int]]:
-        connections = []
+        """Read the map file and return all parsed connection tuples."""
+        connections: list[tuple[str, str, int]] = []
 
         with open(self.file_path, "r", encoding="utf-8") as file:
-            for line in file:
-                line = line.strip()
+            for line_num, raw_line in enumerate(file, start=1):
+                line = raw_line.strip()
                 if not line or line.startswith("#"):
                     continue
 
-                if "connection:" in line:
+                if line.startswith("connection:"):
                     self.reset()
-                    self._parse_connection(line)
+                    self._parse_connection(line, line_num)
                     connections.append(
-                        (self.origin, self.dest, self.max_link_cap))
+                        (self.origin, self.dest, self.max_link_cap)
+                    )
 
         return connections

@@ -6,25 +6,31 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/06 12:22:30 by ksener          #+#    #+#               #
-#  Updated: 2026/11/16 14:40:48 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/19 12:10:36 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
-from src.core.models import StartModel, EndModel, HubModel, Drone
-from src.core.error import ValidationParsingError
+from typing import Any
+
+from src.core.error import ParsingError, ValidationParsingError
+from src.core.models import Drone, EndModel, HubModel, StartModel
 from .parsing_conn import ConnParser
 from .parsing_hub import parsing_hub
 
 
 class MapParser:
-    def __init__(self, file_path: str):
-        self.file_path = file_path
-        self.start_model = None
-        self.end_model = None
-        self.nb_drones = 0
+    """High-level coordinator converting raw map files into Pydantic models."""
 
-    def _to_models(self, hubs: list) -> list[HubModel]:
-        hub_list = []
+    def __init__(self, file_path: str) -> None:
+        """Initialize parser with the path to a map file."""
+        self.file_path: str = file_path
+        self.start_model: StartModel | None = None
+        self.end_model: EndModel | None = None
+        self.nb_drones: int = 0
+
+    def _to_models(self, hubs: list[dict[str, Any]]) -> list[HubModel]:
+        """Convert raw hub dictionaries into validated HubModel instances."""
+        hub_list: list[HubModel] = []
         for item in hubs:
             hub_model = HubModel(
                 name=item["name"],
@@ -39,83 +45,110 @@ class MapParser:
         return hub_list
 
     def _extract_nb_drones(self, lines: list[str]) -> int:
-        for line in lines:
-            line = line.strip()
-            if line.startswith("nb_drones:"):
-                nb_drones = int(line.split(":")[1].strip())
-                if nb_drones < 1:
-                    raise ValidationParsingError(
-                        "Drone count must be a positive integer.")
-                return nb_drones
+        """Validate and extract 'nb_drones' from the first non-comment line."""
+        for line_num, raw_line in enumerate(lines, start=1):
+            line = raw_line.strip()
+            if not line or line.startswith("#"):
+                continue
+            if not line.startswith("nb_drones:"):
+                raise ValidationParsingError(
+                    f"Line {line_num}: First directive must be 'nb_drones:'."
+                )
+            try:
+                nb_drones = int(line.split(":", 1)[1].strip())
+            except ValueError as exc:
+                raise ValidationParsingError(
+                    f"Line {line_num}: 'nb_drones' must be an integer."
+                ) from exc
+            if nb_drones < 1:
+                raise ValidationParsingError(
+                    f"Line {line_num}: Drone count must be positive."
+                )
+            return nb_drones
         raise ValidationParsingError(
             "'nb_drones' field is missing in map file.")
 
-    def parse(self):
-        with open(self.file_path, "r", encoding="utf-8") as file:
-            try:
+    def parse(self) -> list[Any]:
+        """Parse map file into [StartModel, EndModel, list[HubModel]]."""
+        try:
+            with open(self.file_path, "r", encoding="utf-8") as file:
                 lines = file.readlines()
-                self.nb_drones = self._extract_nb_drones(lines)
-                start_hub, end_hub, hubs = parsing_hub(lines)
+        except OSError as exc:
+            raise ValidationParsingError(
+                f"Cannot open map file '{self.file_path}': {exc}"
+            ) from exc
 
-                self.start_model = StartModel(
-                    name=start_hub["name"],
-                    x=start_hub["x"],
-                    y=start_hub["y"],
-                    neighbor=start_hub.get("neighbor", {}),
-                    color=start_hub["color"],
-                )
-                self.end_model = EndModel(
-                    name=end_hub["name"],
-                    x=end_hub["x"],
-                    y=end_hub["y"],
-                    neighbor=end_hub.get("neighbor", {}),
-                    color=end_hub["color"],
-                )
-                hub_list = []
-                hub_list.append(self.start_model)
-                hub_list.append(self.end_model)
-                hub_list.append(self._to_models(hubs))
-                return hub_list
-            except Exception as e:
-                raise ValidationParsingError(f"Map parsing failed: {e}") from e
+        try:
+            self.nb_drones = self._extract_nb_drones(lines)
+            start_hub, end_hub, hubs = parsing_hub(lines)
+
+            self.start_model = StartModel(
+                name=start_hub["name"],
+                x=int(start_hub["x"]),
+                y=int(start_hub["y"]),
+                neighbor=start_hub.get("neighbor", {}),
+                color=start_hub.get("color", "green"),
+            )
+            self.end_model = EndModel(
+                name=end_hub["name"],
+                x=int(end_hub["x"]),
+                y=int(end_hub["y"]),
+                neighbor=end_hub.get("neighbor", {}),
+                color=end_hub.get("color", "yellow"),
+            )
+            return [self.start_model, self.end_model, self._to_models(hubs)]
+        except ParsingError:
+            raise
+        except Exception as exc:
+            raise ValidationParsingError(f"Map parsing failed: {exc}") from exc
 
     def parse_drones(self) -> list[Drone]:
-        with open(self.file_path, "r", encoding="utf-8") as file:
-            try:
+        """Initialize the requested number of Drone objects at start_hub."""
+        try:
+            with open(self.file_path, "r", encoding="utf-8") as file:
                 lines = file.readlines()
-                self.nb_drones = self._extract_nb_drones(lines)
-                start_hub, _, _ = parsing_hub(lines)
+            self.nb_drones = self._extract_nb_drones(lines)
+            start_hub, _, _ = parsing_hub(lines)
 
-                if not start_hub.get("name"):
-                    raise ValidationParsingError(
-                        "Start hub could not be parsed for drone initialization.")
-
-                return [
-                    Drone(drone_id=drone_id, start_hub_name=start_hub["name"])
-                    for drone_id in range(1, self.nb_drones + 1)
-                ]
-            except Exception as e:
+            if not start_hub.get("name"):
                 raise ValidationParsingError(
-                    f"Drone parsing failed: {e}") from e
+                    "Start hub could not be parsed for drone initialization."
+                )
+
+            return [
+                Drone(id=drone_id, current_location=start_hub["name"])
+                for drone_id in range(1, self.nb_drones + 1)
+            ]
+        except ParsingError:
+            raise
+        except Exception as exc:
+            raise ValidationParsingError(
+                f"Drone parsing failed: {exc}"
+            ) from exc
 
 
-def validate_connection(parsed_list: list[tuple[str, str, int]], file_path: str):
-    seen_connections = set()
+def validate_connection(
+    parsed_list: list[tuple[str, str, int]], file_path: str
+) -> bool:
+    """Ensure connections reference valid hubs without duplicates."""
+    seen_connections: set[tuple[str, str]] = set()
     with open(file_path, "r", encoding="utf-8") as file:
         start_hub, end_hub, hubs = parsing_hub(file)
 
-    hub_name_set = {start_hub["name"], end_hub["name"]}
+    hub_name_set: set[str] = {start_hub["name"], end_hub["name"]}
     for hub in hubs:
         hub_name_set.add(hub["name"])
 
     for origin, dest, max_link_cap in parsed_list:
         if origin not in hub_name_set or dest not in hub_name_set:
             return False
-
+        if origin == dest:
+            return False
         if int(max_link_cap) < 1:
             return False
 
-        connection_pair = tuple(sorted([origin, dest]))
+        pair = sorted([origin, dest])
+        connection_pair = (pair[0], pair[1])
         if connection_pair in seen_connections:
             return False
 
@@ -124,23 +157,21 @@ def validate_connection(parsed_list: list[tuple[str, str, int]], file_path: str)
     return True
 
 
-def parsing_connection(file_path: str):
+def parsing_connection(file_path: str) -> list[tuple[str, str, int]]:
+    """Parse and validate all connections from the given map file."""
     parsed_connection = ConnParser(file_path).parse_all()
     if validate_connection(parsed_connection, file_path):
         return parsed_connection
-    else:
-        raise ValidationParsingError(
-            "Connection validation failed: unknown hub name or invalid capacity."
-        )
+    raise ValidationParsingError(
+        "Connection validation failed: unknown hub name or duplicate link."
+    )
 
 
-def parsing_hub_func(file_path: str):
+def parsing_hub_func(file_path: str) -> list[Any]:
+    """Parse hubs from file path."""
     return MapParser(file_path).parse()
 
 
-def parsing_drone_func(file_path: str):
+def parsing_drone_func(file_path: str) -> list[Drone]:
+    """Parse drones from file path."""
     return MapParser(file_path).parse_drones()
-
-
-def parsing_start_end(file_path: str):
-    return MapParser(file_path).get_start_end()
