@@ -55,13 +55,21 @@ Available options:
 | Option | Purpose |
 | --- | --- |
 | `MAP` | Optional positional map path; takes precedence over `--map`. |
-| `--map PATH` | Select a map file. The code's default is `maps/easy/01_linear_path.txt`, which is not present in this checkout; provide an existing map path. |
+| `--map PATH` | Select a map file. Default: `maps/easy/01_linear_path.txt`. |
 | `--animate` | Render the graphical simulation. Without it, only the turn log is printed. |
 | `--preview` | Open the rendered animation automatically; use with `--animate`. |
 | `--quality {low_quality,medium_quality,high_quality}` | Set Manim render quality. Default: `high_quality`. |
 | `-h`, `--help` | Display CLI help. |
 
-The Makefile provides `run`, `lint`, `lint-strict`, and `clean` targets. Its `run` target uses the CLI default map, so choose a direct `uv run` command above when using the maps currently in the repository. Dependencies can be installed with `uv sync`.
+The Makefile provides `install`, `run`, `debug`, `lint`, `lint-strict`, and `clean` targets. `make install` syncs dependencies; `make debug` starts the application in Python's debugger.
+
+### Quick turn-count display
+
+Each output line is one simulation turn. Use this command during a demo to show the moves and print the total at the end:
+
+```bash
+uv run python -m src --map maps/easy/01_linear_path.txt | awk '{print} END {print "Turns:", NR}'
+```
 
 ### Map format
 
@@ -108,7 +116,7 @@ The implementation is organized into parsing, model, pathfinding/simulation, and
 
 1. **Parse and validate.** The CLI selects a map. The parser reads the drone count, hub definitions and connection definitions, validates names, metadata, capacities, and references, then builds Pydantic models and adjacency data. Connections are treated as undirected.
 2. **Search candidate routes.** A heap-based best-first search expands simple paths from the start. Entering a normal or priority hub costs 1; entering a restricted hub costs 2; blocked hubs are skipped. Priority hubs receive a tie-break preference. The search gathers a bounded set of distinct candidate paths, capped at 12 and also capped by the number of drones; it stops exploring beyond four cost units above the first found route.
-3. **Assign routes.** Drones are assigned one at a time to the candidate path with the lowest current cost/load value. This spreads drones among candidate routes, but does not optimize a complete fleet schedule globally.
+3. **Assign routes.** Drones are assigned one at a time to the candidate path with the lowest current cost/load value. For fleets larger than 12, the candidate set is first narrowed to paths with the lowest route cost, so the fleet is distributed across equally short routes. This spreads drones among candidate routes, but does not optimize a complete fleet schedule globally.
 4. **Schedule turns.** Each turn, active drones are ordered with restricted-zone arrivals first, then by remaining path length and drone ID. The scheduler checks per-turn link usage and current intermediate-hub occupancy before allowing a move. When no drone can move and none is in transit, the simulation reports a deadlock rather than looping forever.
 5. **Log or render.** The scheduled moves become one space-separated output line per turn. When requested, the same turn log drives the Manim scene.
 

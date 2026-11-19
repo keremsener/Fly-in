@@ -174,6 +174,8 @@ def _process_turn(state: dict[str, Any]) -> list[str]:
             drone.transit_target = None
             drone.current_location = target_name
             drone.path.pop(0)
+            if target_name not in (start_name, end_name):
+                hub_occupancy[target_name] += 1
             turn_moves.append(f"D{drone.id}-{target_name}")
 
             if target_name == end_name:
@@ -190,7 +192,10 @@ def _process_turn(state: dict[str, Any]) -> list[str]:
         if link_usage[link_key] >= link_capacities[link_key]:
             continue
 
-        if next_name not in (start_name, end_name):
+        if (
+            next_name not in (start_name, end_name)
+            and next_hub.zone != "restricted"
+        ):
             max_drones = getattr(next_hub, "max_drones", 1)
             if hub_occupancy[next_name] >= max_drones:
                 continue
@@ -200,7 +205,10 @@ def _process_turn(state: dict[str, Any]) -> list[str]:
 
         link_usage[link_key] += 1
 
-        if next_name not in (start_name, end_name):
+        if (
+            next_name not in (start_name, end_name)
+            and next_hub.zone != "restricted"
+        ):
             hub_occupancy[next_name] += 1
 
         if next_hub.zone == "restricted":
@@ -216,6 +224,15 @@ def _process_turn(state: dict[str, Any]) -> list[str]:
 
             if next_name == end_name:
                 drone.is_finished = True
+
+    for hub_name, occupancy in hub_occupancy.items():
+        if hub_name in (start_name, end_name):
+            continue
+        capacity = getattr(hub_lookup[hub_name], "max_drones", 1)
+        if occupancy > capacity:
+            raise RuntimeError(
+                f"Hub '{hub_name}' capacity exceeded during simulation."
+            )
 
     return turn_moves
 
@@ -253,6 +270,13 @@ def find_shortest_paths(
         hub_lookup,
         max_paths=min(len(drones), 12),
     )
+    if len(drones) > 12:
+        shortest_cost = min(cost for cost, _ in weighted_paths)
+        weighted_paths = [
+            (cost, path)
+            for cost, path in weighted_paths
+            if cost == shortest_cost
+        ]
     _assign_paths_to_drones(drones, weighted_paths)
 
     while not all(drone.is_finished for drone in drones):
