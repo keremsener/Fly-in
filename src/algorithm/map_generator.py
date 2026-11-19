@@ -6,7 +6,7 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/10 13:02:57 by ksener          #+#    #+#               #
-#  Updated: 2026/11/19 12:09:16 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/19 20:44:00 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -64,12 +64,20 @@ class MovingAround(MovingCameraScene):  # type: ignore[misc]
 
     def draw_hub(self, name: str, x: int, y: int, col: str) -> None:
         """Draw a circular node with label for a network hub."""
-        circle = Circle(
-            color=col,
-            fill_opacity=1,
-            arc_center=[x, y, 0],
-            radius=0.5,
-        )
+        try:
+            circle = Circle(
+                color=col,
+                fill_opacity=1,
+                arc_center=[x, y, 0],
+                radius=0.5,
+            )
+        except Exception:
+            circle = Circle(
+                color="gray",
+                fill_opacity=1,
+                arc_center=[x, y, 0],
+                radius=0.5,
+            )
         label = Text(str(name), font_size=20).move_to([x, y, 0])
         self.add(circle, label)
         self.hub_mobjects[name] = circle
