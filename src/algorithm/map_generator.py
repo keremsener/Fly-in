@@ -6,7 +6,7 @@
 #  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/11/10 13:02:57 by ksener          #+#    #+#               #
-#  Updated: 2026/11/19 20:44:00 by ksener          ###   ########.fr        #
+#  Updated: 2026/11/19 20:48:00 by ksener          ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -51,13 +51,11 @@ class MovingAround(MovingCameraScene):  # type: ignore[misc]
         self.camera.frame.move_to([5, 5, 0])
         self.camera.frame.set(width=22)
 
+        self.bg_image: ImageMobject | None = None
         if os.path.exists("space.jpg"):
-            bg_image = ImageMobject("space.jpg")
-            bg_image.width = self.camera.frame.width
-            bg_image.height = self.camera.frame.height
-            bg_image.move_to(self.camera.frame.get_center())
-            bg_image.set_z_index(-10)
-            self.add(bg_image)
+            self.bg_image = ImageMobject("space.jpg")
+            self.bg_image.set_z_index(-10)
+            self.add(self.bg_image)
 
         self.hub_mobjects: dict[str, Circle] = {}
         self.drone_mobjects: dict[str, VGroup] = {}
@@ -165,6 +163,21 @@ def map_generate(
         scene.draw_hub(end_hub.name, end_hub.x, end_hub.y, end_hub.color)
         for hub in middle_hubs:
             scene.draw_hub(hub.name, hub.x, hub.y, hub.color)
+
+        all_hubs = [start_hub, end_hub, *middle_hubs]
+        xs = [h.x for h in all_hubs]
+        ys = [h.y for h in all_hubs]
+        scene.camera.frame.move_to(
+            [(min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2, 0]
+        )
+        scene.camera.frame.set(
+            width=max(12.0, float(max(xs) - min(xs) + 4), float(max(ys) - min(ys) + 4) * 1.8)
+        )
+        if scene.bg_image is not None:
+            scene.bg_image.width = scene.camera.frame.width
+            scene.bg_image.height = scene.camera.frame.height
+            scene.bg_image.move_to(scene.camera.frame.get_center())
+
         for origin, dest, _ in connections:
             scene.draw_conn(origin, dest)
         for turn in turn_logs:
