@@ -4,7 +4,13 @@ PYTHON        ?= python
 APP           ?= -m src
 LINT_TARGETS  ?= .
 UV            ?= uv
-.PHONY: run lint lint-strict clean
+.PHONY: install run debug lint lint-strict clean
+
+
+# Install
+
+install:
+	@$(UV) sync
 
 
 # Run
@@ -12,6 +18,12 @@ UV            ?= uv
 run:
 	@printf '\033[0;32m[run]\033[0m Starting application\n'
 	@$(UV) run $(PYTHON) $(APP)
+
+
+# Debug
+
+debug:
+	@$(UV) run $(PYTHON) -m pdb $(APP)
 
 
 # Lint
