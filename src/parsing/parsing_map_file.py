@@ -26,7 +26,7 @@ def parsing_map_file() -> Namespace:
     parser.add_argument(
         "--map",
         type=str,
-        default="maps/subject_map.txt",
+        default="maps/easy/01_linear_path.txt",
         help="Path to the map configuration file (flag option).",
     )
     parser.add_argument(

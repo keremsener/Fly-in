@@ -13,7 +13,7 @@
 import os
 import random
 from argparse import Namespace
-from typing import Any
+from typing import Any, cast
 
 from manim import (
     BLUE,
@@ -25,11 +25,13 @@ from manim import (
     ImageMobject,
     Line,
     MovingCameraScene,
+    Mobject,
     Square,
     Text,
     VGroup,
     tempconfig,
 )
+from manim.camera.moving_camera import MovingCamera
 
 from src.core.error import ParsingError
 from src.core.models import EndModel, HubModel, StartModel
@@ -42,14 +44,15 @@ from src.parsing.parsing_map_file import parsing_map_file
 from .pathfinding import find_shortest_paths
 
 
-class MovingAround(MovingCameraScene):  # type: ignore[misc]
+class MovingAround(MovingCameraScene):
     """Manim scene rendering the hub network and animated drone flights."""
 
     def __init__(self, **kwargs: Any) -> None:
         """Initialize camera framing, optional background, and object maps."""
         super().__init__(**kwargs)
-        self.camera.frame.move_to([5, 5, 0])
-        self.camera.frame.set(width=22)
+        camera = cast(MovingCamera, self.camera)
+        camera.frame.move_to((5.0, 5.0, 0.0))
+        camera.frame.set(width=22)
 
         self.bg_image: ImageMobject | None = None
         if os.path.exists("space.jpg"):
@@ -76,7 +79,9 @@ class MovingAround(MovingCameraScene):  # type: ignore[misc]
                 arc_center=[x, y, 0],
                 radius=0.5,
             )
-        label = Text(str(name), font_size=20).move_to([x, y, 0])
+        label = Text(str(name), font_size=20).move_to(
+            (float(x), float(y), 0.0)
+        )
         self.add(circle, label)
         self.hub_mobjects[name] = circle
 
@@ -153,6 +158,8 @@ def map_generate(
         }
     ):
         scene = MovingAround()
+        camera = cast(MovingCamera, scene.camera)
+        frame: Mobject = camera.frame
         start_hub: StartModel = hubs[0]
         end_hub: EndModel = hubs[1]
         middle_hubs: list[HubModel] = hubs[2]
@@ -167,16 +174,24 @@ def map_generate(
         all_hubs = [start_hub, end_hub, *middle_hubs]
         xs = [h.x for h in all_hubs]
         ys = [h.y for h in all_hubs]
-        scene.camera.frame.move_to(
-            [(min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2, 0]
+        frame.move_to(
+            (
+                (min(xs) + max(xs)) / 2,
+                (min(ys) + max(ys)) / 2,
+                0.0,
+            )
         )
-        scene.camera.frame.set(
-            width=max(12.0, float(max(xs) - min(xs) + 4), float(max(ys) - min(ys) + 4) * 1.8)
+        frame.set(
+            width=max(
+                12.0,
+                float(max(xs) - min(xs) + 4),
+                float(max(ys) - min(ys) + 4) * 1.8,
+            )
         )
         if scene.bg_image is not None:
-            scene.bg_image.width = scene.camera.frame.width
-            scene.bg_image.height = scene.camera.frame.height
-            scene.bg_image.move_to(scene.camera.frame.get_center())
+            scene.bg_image.width = frame.width
+            scene.bg_image.height = frame.height
+            scene.bg_image.move_to(frame.get_center())
 
         for origin, dest, _ in connections:
             scene.draw_conn(origin, dest)
