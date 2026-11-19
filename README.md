@@ -55,7 +55,7 @@ Available options:
 | Option | Purpose |
 | --- | --- |
 | `MAP` | Optional positional map path; takes precedence over `--map`. |
-| `--map PATH` | Select a map file. The code's default is `maps/subject_map.txt`, which is not present in this checkout; provide an existing map path. |
+| `--map PATH` | Select a map file. The code's default is `maps/easy/01_linear_path.txt`, which is not present in this checkout; provide an existing map path. |
 | `--animate` | Render the graphical simulation. Without it, only the turn log is printed. |
 | `--preview` | Open the rendered animation automatically; use with `--animate`. |
 | `--quality {low_quality,medium_quality,high_quality}` | Set Manim render quality. Default: `high_quality`. |
@@ -178,4 +178,4 @@ The map catalogue is documented in [`maps/README.md`](maps/README.md).
 
 ### AI usage
 
-AI assistance was used to create this README, choose the solution algorithm, and support the use of the Manim library.
+AI assistance was used to inspect the existing source code and the project subject, then to draft and cross-check this README. In particular, it helped describe the parser, route search, turn scheduler, CLI options, animation, and an example run against the current implementation. AI was not used in this work to modify the simulation source code. The README claims and sample output should be checked against the source and run by project contributors before peer evaluation.
